@@ -1,5 +1,21 @@
 package GestionVideojuegos.example.videojuegos.services;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
+import GestionVideojuegos.example.videojuegos.Entities.Games;
+import GestionVideojuegos.example.videojuegos.Entities.Movements;
+import GestionVideojuegos.example.videojuegos.Entities.Users;
+import GestionVideojuegos.example.videojuegos.Repositories.GamesRepository;
+import GestionVideojuegos.example.videojuegos.Repositories.MovementRepository;
+import GestionVideojuegos.example.videojuegos.Repositories.UsersRepository;
+import GestionVideojuegos.example.videojuegos.dto.MovementRequestDTO;
+import GestionVideojuegos.example.videojuegos.dto.MovementResponseDTO;
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class MovementService {

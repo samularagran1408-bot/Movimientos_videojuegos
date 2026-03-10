@@ -1,16 +1,27 @@
 package GestionVideojuegos.example.videojuegos.services;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import GestionVideojuegos.example.videojuegos.Entities.Games;
+import GestionVideojuegos.example.videojuegos.Entities.Users;
+import GestionVideojuegos.example.videojuegos.Repositories.GamesRepository;
+import GestionVideojuegos.example.videojuegos.Repositories.UsersRepository;
+import GestionVideojuegos.example.videojuegos.dto.GameRequestDTO;
+import GestionVideojuegos.example.videojuegos.dto.GameResponseDTO;
+import GestionVideojuegos.example.videojuegos.dto.MessageResponseDTO;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class GamesService {
-   
-
-
 
     private final GamesRepository gamesRepository;
-    private final UserRepository usersRepository;
+    private final UsersRepository usersRepository;
 
+   
     public GameResponseDTO createGame(GameRequestDTO gameRequestDTO) {
         Games game = new Games();
         game.setName(gameRequestDTO.getName());
@@ -28,7 +39,7 @@ public class GamesService {
             game.setUser(null);
         }
 
-gamesRepository.save(game);
+        gamesRepository.save(game);
 
         GameResponseDTO response = new GameResponseDTO();
         response.setId(game.getId());
@@ -121,4 +132,3 @@ gamesRepository.save(game);
         return response;
     }
 }
-
