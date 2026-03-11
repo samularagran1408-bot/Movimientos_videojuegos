@@ -25,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 public class UsersController {
     private final UsersService usersService;
 
+    // Peticiones HTTP para acciones crud
+
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO userRequestDTO) {
         try {

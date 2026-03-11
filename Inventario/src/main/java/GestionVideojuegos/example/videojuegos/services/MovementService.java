@@ -1,60 +1,76 @@
 package GestionVideojuegos.example.videojuegos.services;
 
+import GestionVideojuegos.example.videojuegos.Entities.*;
+import GestionVideojuegos.example.videojuegos.Repositories.*;
+import GestionVideojuegos.example.videojuegos.dto.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class MovementService {
-
+    
     private final MovementRepository movementRepository;
     private final UsersRepository usersRepository;
     private final GamesRepository gamesRepository;
-
+    
+    // Crear movimiento
     public MovementResponseDTO createMovement(MovementRequestDTO request) {
         Users user = usersRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con id " + request.getUserId()));
-
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
         Games game = gamesRepository.findById(request.getGameId())
-                .orElseThrow(() -> new IllegalArgumentException("No se encontró el juego con id " + request.getGameId()));
-
-        Integer quantity = request.getQuantity() != null ? request.getQuantity() : 1;
-
-        BigDecimal pricePerUnit = BigDecimal.valueOf(game.getPrice());
-        BigDecimal totalPrice = pricePerUnit.multiply(BigDecimal.valueOf(quantity));
-
+            .orElseThrow(() -> new RuntimeException("Juego no encontrado"));
+        
         Movements movement = new Movements();
         movement.setUser(user);
         movement.setGame(game);
-        movement.setQuantity(quantity);
-        movement.setTotalPrice(totalPrice);
-
-        movementRepository.save(movement);
-
-        return mapToResponse(movement);
+        movement.setQuantity(request.getQuantity());
+        movement.setTotalPrice(
+        BigDecimal.valueOf(game.getPrice())  // Convertir Long a BigDecimal
+            .multiply(BigDecimal.valueOf(request.getQuantity())));
+        return convertToDTO(movementRepository.save(movement));
     }
-
-    public List<MovementResponseDTO> getMovementsByUser(Long userId) {
-        List<Movements> movements = movementRepository.findByUserId(userId);
-        return movements.stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-
+    
+    // Listar todos
     public List<MovementResponseDTO> getAllMovements() {
-        return movementRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        return movementRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-
-    private MovementResponseDTO mapToResponse(Movements movement) {
-        MovementResponseDTO response = new MovementResponseDTO();
-        response.setId(movement.getId());
-        response.setUserName(movement.getUser().getName());
-        response.setGameName(movement.getGame().getName());
-        response.setQuantity(movement.getQuantity());
-        response.setTotalPrice(movement.getTotalPrice());
-        response.setPurchaseDate(movement.getMovementDate());
-        response.setStatus(movement.getStatus());
-        return response;
+    
+    // Buscar por ID
+    public MovementResponseDTO getMovementById(Long id) {
+        Movements movement = movementRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Movimiento no encontrado"));
+        return convertToDTO(movement);
+    }
+    
+    // Buscar por usuario
+    public List<MovementResponseDTO> getMovementsByUser(Long userId) {
+        return movementRepository.findByUserId(userId).stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+    
+    // Cancelar movimiento
+    public MovementResponseDTO cancelMovement(Long id) {
+        Movements movement = movementRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Movimiento no encontrado"));
+        movement.setStatus("CANCELADO");
+        return convertToDTO(movementRepository.save(movement));
+    }
+    
+    // Convertir Entity a DTO
+    private MovementResponseDTO convertToDTO(Movements m) {
+        MovementResponseDTO dto = new MovementResponseDTO();
+        dto.setId(m.getId());
+        dto.setUserId(m.getUser().getId());
+        dto.setUserName(m.getUser().getName());
+        dto.setGameId(m.getGame().getId());
+        dto.setGameName(m.getGame().getName());
+        dto.setQuantity(m.getQuantity());
+        dto.setTotalPrice(m.getTotalPrice());
+        dto.setMovementDate(m.getMovementDate());
+        dto.setStatus(m.getStatus());
+        return dto;
     }
 }
-
